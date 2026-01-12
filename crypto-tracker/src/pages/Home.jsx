@@ -8,6 +8,7 @@ export const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState("grid");
   const [sortBy, setSortBy] = useState("market_cap_rank");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchCryptoData();
@@ -15,7 +16,7 @@ export const Home = () => {
 
   useEffect(() => {
     filterAndSort();
-  }, [sortBy, cryptoList]);
+  }, [sortBy, cryptoList, searchQuery]);
 
   const fetchCryptoData = async () => {
     try {
@@ -29,7 +30,11 @@ export const Home = () => {
   };
 
   const filterAndSort = () => {
-    let filtered = [...cryptoList];
+    let filtered = cryptoList.filter(
+      (crypto) =>
+        crypto.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        crypto.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+    );
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "name":
@@ -40,6 +45,8 @@ export const Home = () => {
           return b.current_price - a.current_price;
         case "change":
           return a.price_change_percentage_24h - b.price_change_percentage_24h;
+        case "change_desc":
+          return b.price_change_percentage_24h - a.price_change_percentage_24h;
         case "market_cap":
           return a.market_cap - b.market_cap;
         default:
@@ -57,6 +64,17 @@ export const Home = () => {
             <h1>🚀 Crypto Tracker</h1>
             <p>real time cryptocurrency prices and market data</p>
           </div>
+          <div className="search-section">
+            <input
+              type="text"
+              placeholder="search cryptos..."
+              className="search-input"
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+              }}
+              value={searchQuery}
+            />
+          </div>
         </div>
       </header>
       <div className="controls">
@@ -67,7 +85,8 @@ export const Home = () => {
             <option value="name">Name</option>
             <option value="price">Price (Low to High)</option>
             <option value="price_desc">Price (High to Low)</option>
-            <option value="change">24h Change</option>
+            <option value="change">24h Change (Ascending)</option>
+            <option value="change_desc">24h Change (Descending)</option>
             <option value="market_cap">Market Cap</option>
           </select>
         </div>
@@ -103,6 +122,10 @@ export const Home = () => {
           ))}
         </div>
       )}
+
+      <footer className="footer">
+        <p>Data provided by CoinGecko API • Updated every 30 seconds</p>
+      </footer>
     </div>
   );
 };
